@@ -1,6 +1,7 @@
 package nl.robinlaugs.picopizza.stock.messaging.kafka;
 
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -20,12 +21,13 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.*;
 @Configuration
 public class ConsumerConfiguration {
 
-    private static final String KAFKA_HOST = "localhost:9092";
+    @Value("${kafka.host}")
+    private String kafkaHost;
 
     @Bean
     public ConsumerFactory<String, String> consumerFactory() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(BOOTSTRAP_SERVERS_CONFIG, KAFKA_HOST);
+        properties.put(BOOTSTRAP_SERVERS_CONFIG, kafkaHost);
         properties.put(GROUP_ID_CONFIG, 1);
         properties.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         properties.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
