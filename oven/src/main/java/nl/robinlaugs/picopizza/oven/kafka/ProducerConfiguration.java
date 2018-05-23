@@ -1,4 +1,4 @@
-package nl.robinlaugs.picopizza.shop.messaging.kafka;
+package nl.robinlaugs.picopizza.oven.kafka;
 
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import org.apache.kafka.common.serialization.StringSerializer;

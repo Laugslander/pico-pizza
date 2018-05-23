@@ -1,0 +1,7 @@
+server:
+  port: 8082
+
+kafka:
+  host: localhost:9092
+  group: oven
+  topic: routing-topic

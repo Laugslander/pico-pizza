@@ -1,6 +1,10 @@
 package nl.robinlaugs.picopizza.shop.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -13,6 +17,9 @@ import java.util.Collection;
  * @author Robin Laugs
  */
 @Entity(name = "t_pizza")
+@Data
+@RequiredArgsConstructor
+@NoArgsConstructor
 public class Pizza implements Serializable {
 
     @Id
@@ -21,22 +28,7 @@ public class Pizza implements Serializable {
     private long id;
 
     @ElementCollection
+    @NonNull
     private Collection<String> ingredients;
-
-    public Pizza(Collection<String> ingredients) {
-        this.ingredients = ingredients;
-    }
-
-    private Pizza() {
-        // JPA
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public Collection<String> getIngredients() {
-        return ingredients;
-    }
 
 }

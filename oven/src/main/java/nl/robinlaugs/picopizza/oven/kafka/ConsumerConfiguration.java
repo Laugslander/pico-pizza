@@ -1,4 +1,4 @@
-package nl.robinlaugs.picopizza.stock.messaging.kafka;
+package nl.robinlaugs.picopizza.oven.kafka;
 
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static nl.robinlaugs.picopizza.routing.Action.DONE;
+import static nl.robinlaugs.picopizza.routing.Action.TODO;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
 
@@ -54,7 +55,7 @@ public class ConsumerConfiguration {
     public ConcurrentKafkaListenerContainerFactory<String, RoutingSlip> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, RoutingSlip> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        factory.setRecordFilterStrategy(r -> r.value().getStock().equals(DONE));
+        factory.setRecordFilterStrategy(r -> r.value().getStock().equals(TODO) || r.value().getOven().equals(DONE));
 
         return factory;
     }
