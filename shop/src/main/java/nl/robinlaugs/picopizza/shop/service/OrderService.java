@@ -27,20 +27,29 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    private final KafkaTemplate<String, RoutingSlip> kafkaTemplate;
+    private final KafkaTemplate<String, RoutingSlip> kafka;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, RoutingSlip> kafkaTemplate) {
+    public OrderService(OrderRepository orderRepository, KafkaTemplate<String, RoutingSlip> kafka) {
         this.orderRepository = orderRepository;
-        this.kafkaTemplate = kafkaTemplate;
+        this.kafka = kafka;
     }
 
     @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
-        Order order = get(slip.getPayload().getId());
-        order.setReady(true);
+        Payload payload = slip.getPayload();
+
+        Order order = get(payload.getId());
+
+        if (payload.isInStock()) {
+            order.setReady(true);
+            order.setOutOfStock(false);
+        } else {
+            order.setReady(false);
+            order.setOutOfStock(true);
+        }
 
         orderRepository.save(order);
     }
@@ -48,12 +57,16 @@ public class OrderService {
     public long create(Order order) {
         orderRepository.save(order);
 
-        Payload payload = new Payload(order.getId(), order.getPizza().getIngredients());
+        long id = order.getId();
+
+        Payload payload = new Payload(id, order.getPizza().getIngredients());
         RoutingSlip slip = new RoutingSlip(payload);
 
-        kafkaTemplate.send(topic, slip);
+        log.log(INFO, format("Sent routing slip for order %d to topic", id));
 
-        return order.getId();
+        kafka.send(topic, slip);
+
+        return id;
     }
 
     public Order get(long id) throws OrderNotFoundException {

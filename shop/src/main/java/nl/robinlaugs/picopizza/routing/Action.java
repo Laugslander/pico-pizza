@@ -6,6 +6,7 @@ package nl.robinlaugs.picopizza.routing;
 public enum Action {
 
     TODO,
-    DONE
+    CONTINUE,
+    STOP
 
 }

@@ -15,7 +15,8 @@ import java.util.Collection;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
 import static java.util.logging.Level.INFO;
-import static nl.robinlaugs.picopizza.routing.Action.DONE;
+import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
+import static nl.robinlaugs.picopizza.routing.Action.STOP;
 
 /**
  * @author Robin Laugs
@@ -29,12 +30,12 @@ public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
 
-    private final KafkaTemplate<String, RoutingSlip> kafkaTemplate;
+    private final KafkaTemplate<String, RoutingSlip> kafka;
 
     @Autowired
-    public IngredientService(IngredientRepository ingredientRepository, KafkaTemplate<String, RoutingSlip> kafkaTemplate) {
+    public IngredientService(IngredientRepository ingredientRepository, KafkaTemplate<String, RoutingSlip> kafka) {
         this.ingredientRepository = ingredientRepository;
-        this.kafkaTemplate = kafkaTemplate;
+        this.kafka = kafka;
     }
 
     @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
@@ -45,13 +46,15 @@ public class IngredientService {
 
         if (checkStock(ingredients)) {
             slip.getPayload().setInStock(true);
+            slip.setStockActionStatus(CONTINUE);
 
             decreaseStock(ingredients);
+        } else {
+            slip.setStockActionStatus(STOP);
         }
 
-        slip.setStock(DONE);
 
-        kafkaTemplate.send("routing-topic", slip);
+        kafka.send("routing-topic", slip);
     }
 
     private boolean checkStock(Collection<String> ingredients) {

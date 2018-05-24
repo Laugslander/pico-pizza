@@ -27,5 +27,6 @@ public class Order implements Serializable {
     private Pizza pizza;
 
     private boolean ready;
+    private boolean outOfStock;
 
 }

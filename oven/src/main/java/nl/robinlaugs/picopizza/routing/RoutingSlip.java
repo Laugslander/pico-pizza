@@ -20,8 +20,8 @@ public class RoutingSlip implements Serializable {
     @NonNull
     private Payload payload;
 
-    private Action stock = TODO;
-    private Action oven = TODO;
-    private Action stash = TODO;
+    private Action stockActionStatus = TODO;
+    private Action ovenActionStatus = TODO;
+    private Action stashActionStatus = TODO;
 
 }
