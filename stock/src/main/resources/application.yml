@@ -4,4 +4,4 @@ server:
 kafka:
   host: localhost:9092
   group: stock
-  topic: routing-topic
+  routing-topic: routing-topic

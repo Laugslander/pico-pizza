@@ -10,6 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
 
+import static nl.robinlaugs.picopizza.shop.domain.OrderStatus.*;
+
 /**
  * @author Robin Laugs
  */
@@ -26,7 +28,6 @@ public class Order implements Serializable {
     @NonNull
     private Pizza pizza;
 
-    private boolean ready;
-    private boolean outOfStock;
+    private OrderStatus status = BEING_PREPARED;
 
 }

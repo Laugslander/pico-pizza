@@ -1,7 +1,10 @@
-package nl.robinlaugs.picopizza.oven.service;
+package nl.robinlaugs.picopizza.stash.service;
 
 import lombok.extern.java.Log;
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
+import nl.robinlaugs.picopizza.stash.data.redis.OrderRepository;
+import nl.robinlaugs.picopizza.stash.domain.Order;
+import nl.robinlaugs.picopizza.stash.exception.PayloadNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -9,9 +12,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import static java.lang.String.format;
-import static java.lang.Thread.sleep;
 import static java.util.logging.Level.INFO;
-import static java.util.logging.Level.SEVERE;
 import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
 
 /**
@@ -19,44 +20,40 @@ import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
  */
 @Service
 @Log
-public class OvenService {
-
-    private static final int BAKING_TIME_SECONDS = 5;
+public class StashService {
 
     @Value("${kafka.routing-topic}")
     private String routingTopic;
 
     private final KafkaTemplate<String, RoutingSlip> kafka;
 
+    private final OrderRepository orderRepository;
+
     @Autowired
-    public OvenService(KafkaTemplate<String, RoutingSlip> kafka) {
+    public StashService(KafkaTemplate<String, RoutingSlip> kafka, OrderRepository orderRepository) {
         this.kafka = kafka;
+        this.orderRepository = orderRepository;
     }
 
     @KafkaListener(topics = "${kafka.routing-topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
-        bake(slip);
+        slip.setStashActionStatus(CONTINUE);
+
+        String id = String.valueOf(slip.getPayload().getId());
+        Order order = new Order(id);
+
+        orderRepository.save(order);
 
         kafka.send(routingTopic, slip);
     }
 
-    private void bake(RoutingSlip slip) {
-        try {
-            long id = slip.getPayload().getId();
+    public Order get(String id) {
+        Order order = orderRepository.findById(id).orElseThrow(() -> new PayloadNotFoundException(id));
 
-            log.log(INFO, format("Started baking order with id %d", id));
+        orderRepository.deleteById(id);
 
-            sleep(BAKING_TIME_SECONDS * 1000);
-
-            log.log(INFO, format("Finished baking order with id %d", id));
-        } catch (InterruptedException e) {
-            log.log(SEVERE, "An error occurred while baking", e);
-        }
-
-        slip.getPayload().setBaked(true);
-        slip.setOvenActionStatus(CONTINUE);
+        return order;
     }
-
 }

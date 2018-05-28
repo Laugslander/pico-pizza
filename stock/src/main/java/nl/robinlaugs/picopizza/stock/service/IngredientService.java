@@ -25,8 +25,8 @@ import static nl.robinlaugs.picopizza.routing.Action.STOP;
 @Log
 public class IngredientService {
 
-    @Value("${kafka.topic}")
-    private String topic;
+    @Value("${kafka.routing-topic}")
+    private String routingTopic;
 
     private final IngredientRepository ingredientRepository;
 
@@ -38,7 +38,7 @@ public class IngredientService {
         this.kafka = kafka;
     }
 
-    @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.routing-topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
@@ -54,7 +54,7 @@ public class IngredientService {
         }
 
 
-        kafka.send("routing-topic", slip);
+        kafka.send(routingTopic, slip);
     }
 
     private boolean checkStock(Collection<String> ingredients) {

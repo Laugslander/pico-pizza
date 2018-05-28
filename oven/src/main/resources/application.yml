@@ -4,4 +4,4 @@ server:
 kafka:
   host: localhost:9092
   group: oven
-  topic: routing-topic
+  routing-topic: routing-topic

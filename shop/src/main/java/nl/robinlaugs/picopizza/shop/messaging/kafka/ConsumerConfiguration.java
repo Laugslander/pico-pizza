@@ -62,9 +62,15 @@ public class ConsumerConfiguration {
 
             Action stockActionStatus = slip.getStockActionStatus();
             Action ovenActionStatus = slip.getOvenActionStatus();
+            Action stashActionStatus = slip.getStashActionStatus();
 
-            boolean continueCondition = stockActionStatus.equals(CONTINUE) && ovenActionStatus.equals(CONTINUE);
-            boolean stopCondition = stockActionStatus.equals(STOP) || ovenActionStatus.equals(STOP);
+            boolean continueCondition = stockActionStatus.equals(CONTINUE) &&
+                    ovenActionStatus.equals(CONTINUE) &&
+                    stashActionStatus.equals(CONTINUE);
+
+            boolean stopCondition = stockActionStatus.equals(STOP) ||
+                    ovenActionStatus.equals(STOP) ||
+                    stashActionStatus.equals(STOP);
 
             return !(continueCondition || stopCondition);
         });

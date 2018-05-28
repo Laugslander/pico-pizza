@@ -1,0 +1,12 @@
+server:
+  port: 8083
+
+kafka:
+  host: localhost:9092
+  group: stash
+  routing-topic: routing-topic
+
+spring:
+  redis:
+    host: localhost
+    port: 6379

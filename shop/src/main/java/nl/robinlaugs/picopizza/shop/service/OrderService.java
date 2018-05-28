@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import static java.lang.String.format;
 import static java.util.logging.Level.INFO;
+import static nl.robinlaugs.picopizza.shop.domain.OrderStatus.OUT_OF_STOCK;
+import static nl.robinlaugs.picopizza.shop.domain.OrderStatus.PREPARED;
 
 /**
  * @author Robin Laugs
@@ -22,8 +24,8 @@ import static java.util.logging.Level.INFO;
 @Log
 public class OrderService {
 
-    @Value("${kafka.topic}")
-    private String topic;
+    @Value("${kafka.routing-topic}")
+    private String routingTopic;
 
     private final OrderRepository orderRepository;
 
@@ -35,21 +37,14 @@ public class OrderService {
         this.kafka = kafka;
     }
 
-    @KafkaListener(topics = "${kafka.topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = "${kafka.routing-topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
         Payload payload = slip.getPayload();
 
         Order order = get(payload.getId());
-
-        if (payload.isInStock()) {
-            order.setReady(true);
-            order.setOutOfStock(false);
-        } else {
-            order.setReady(false);
-            order.setOutOfStock(true);
-        }
+        order.setStatus(payload.isInStock() ? PREPARED : OUT_OF_STOCK);
 
         orderRepository.save(order);
     }
@@ -64,7 +59,7 @@ public class OrderService {
 
         log.log(INFO, format("Sent routing slip for order %d to topic", id));
 
-        kafka.send(topic, slip);
+        kafka.send(routingTopic, slip);
 
         return id;
     }

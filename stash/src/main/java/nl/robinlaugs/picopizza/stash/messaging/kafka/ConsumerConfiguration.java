@@ -1,4 +1,4 @@
-package nl.robinlaugs.picopizza.stock.messaging.kafka;
+package nl.robinlaugs.picopizza.stash.messaging.kafka;
 
 import nl.robinlaugs.picopizza.routing.Action;
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
@@ -17,6 +17,7 @@ import java.util.Map;
 
 import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
 import static nl.robinlaugs.picopizza.routing.Action.STOP;
+import static nl.robinlaugs.picopizza.routing.Action.TODO;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
 
@@ -62,10 +63,14 @@ public class ConsumerConfiguration {
             RoutingSlip slip = r.value();
 
             Action stockActionStatus = slip.getStockActionStatus();
+            Action ovenActionStatus = slip.getOvenActionStatus();
+            Action stashActionStatus = slip.getStashActionStatus();
 
-            boolean stockActionCondition = stockActionStatus.equals(CONTINUE) || stockActionStatus.equals(STOP);
+            boolean stockActionCondition = stockActionStatus.equals(TODO) || stockActionStatus.equals(STOP);
+            boolean ovenActionCondition = ovenActionStatus.equals(TODO) || ovenActionStatus.equals(STOP);
+            boolean stashActionCondition = stashActionStatus.equals(CONTINUE) || stashActionStatus.equals(STOP);
 
-            return stockActionCondition;
+            return stockActionCondition || ovenActionCondition || stashActionCondition;
         });
 
         return factory;
