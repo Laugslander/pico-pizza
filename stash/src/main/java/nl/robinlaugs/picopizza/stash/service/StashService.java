@@ -4,7 +4,6 @@ import lombok.extern.java.Log;
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import nl.robinlaugs.picopizza.stash.data.redis.OrderRepository;
 import nl.robinlaugs.picopizza.stash.domain.Order;
-import nl.robinlaugs.picopizza.stash.exception.PayloadNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -28,6 +27,7 @@ public class StashService {
 
     @Autowired
     public StashService(KafkaTemplate<String, RoutingSlip> kafka, OrderRepository orderRepository) {
+
         this.kafka = kafka;
         this.orderRepository = orderRepository;
     }
@@ -46,12 +46,20 @@ public class StashService {
         kafka.send(ROUTING_TOPIC, slip);
     }
 
-    public Order get(String id) {
-        Order order = orderRepository.findById(id).orElseThrow(() -> new PayloadNotFoundException(id));
+    public boolean get(String id) {
+        Order order = orderRepository.findById(id).orElse(null);
 
-        orderRepository.deleteById(id);
+        log.log(INFO, format("Shop service requested order with id %s", id));
 
-        return order;
+        if (order != null) {
+            orderRepository.deleteById(id);
+
+            log.log(INFO, format("Removed order with id %s from stash", id));
+
+            return true;
+        }
+
+        return false;
     }
 
 }

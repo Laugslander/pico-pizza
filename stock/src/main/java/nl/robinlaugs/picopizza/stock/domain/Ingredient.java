@@ -14,7 +14,7 @@ import java.io.Serializable;
 /**
  * @author Robin Laugs
  */
-@Entity(name = "t_ingredient")
+@Entity
 @Data
 @RequiredArgsConstructor
 @NoArgsConstructor

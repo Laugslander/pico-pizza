@@ -23,14 +23,14 @@ import static nl.robinlaugs.picopizza.stock.messaging.MessagingConstants.ROUTING
  */
 @Service
 @Log
-public class IngredientService {
+public class StockService {
 
     private final IngredientRepository ingredientRepository;
 
     private final KafkaTemplate<String, RoutingSlip> kafka;
 
     @Autowired
-    public IngredientService(IngredientRepository ingredientRepository, KafkaTemplate<String, RoutingSlip> kafka) {
+    public StockService(IngredientRepository ingredientRepository, KafkaTemplate<String, RoutingSlip> kafka) {
         this.ingredientRepository = ingredientRepository;
         this.kafka = kafka;
     }
@@ -50,12 +50,15 @@ public class IngredientService {
             slip.setStockActionStatus(STOP);
         }
 
+        log.log(INFO, format("Ingredients %s are %s stock", ingredients, slip.getPayload().isInStock() ? "in" : "out of"));
 
         kafka.send(ROUTING_TOPIC, slip);
     }
 
     private boolean checkStock(Collection<String> ingredients) {
         boolean inStock = true;
+
+        log.log(INFO, "Checking stock status...");
 
         for (String i : ingredients) {
             Ingredient ingredient = ingredientRepository.findByName(i);
@@ -76,6 +79,8 @@ public class IngredientService {
             int stock = ingredient.getStock();
 
             ingredient.setStock(stock - 1);
+
+            log.log(INFO, format("Decreased %s stock to %d", ingredient.getName(), ingredient.getStock()));
         }
     }
 

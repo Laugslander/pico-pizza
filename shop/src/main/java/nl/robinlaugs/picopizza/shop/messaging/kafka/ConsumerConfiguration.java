@@ -15,7 +15,8 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static nl.robinlaugs.picopizza.routing.Action.*;
+import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
+import static nl.robinlaugs.picopizza.routing.Action.STOP;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS_CONFIG;
 

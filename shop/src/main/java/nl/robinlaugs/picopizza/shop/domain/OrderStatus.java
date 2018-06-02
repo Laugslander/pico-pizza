@@ -5,8 +5,9 @@ package nl.robinlaugs.picopizza.shop.domain;
  */
 public enum OrderStatus {
 
+    OUT_OF_STOCK,
     BEING_PREPARED,
     PREPARED,
-    OUT_OF_STOCK
+    SERVED
 
 }

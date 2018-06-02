@@ -1,7 +1,7 @@
 package nl.robinlaugs.picopizza;
 
 import nl.robinlaugs.picopizza.stock.domain.Ingredient;
-import nl.robinlaugs.picopizza.stock.service.IngredientService;
+import nl.robinlaugs.picopizza.stock.service.StockService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +22,7 @@ public class Main {
     }
 
     @Bean
-    public CommandLineRunner demo(IngredientService ingredientService) {
+    public CommandLineRunner demo(StockService stockService) {
         return (args) -> {
             Collection<Ingredient> ingredients = asList(
                     new Ingredient("cheese", 5),
@@ -34,7 +34,7 @@ public class Main {
                     new Ingredient("pepperoni", 4)
             );
 
-            ingredientService.createAll(ingredients);
+            stockService.createAll(ingredients);
         };
     }
 
