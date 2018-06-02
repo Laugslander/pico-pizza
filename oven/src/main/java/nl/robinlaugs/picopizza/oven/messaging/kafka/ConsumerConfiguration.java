@@ -26,17 +26,17 @@ import static org.apache.kafka.clients.producer.ProducerConfig.BOOTSTRAP_SERVERS
 @Configuration
 public class ConsumerConfiguration {
 
-    @Value("${kafka.host}")
-    private String host;
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
-    @Value("${kafka.group}")
-    private String group;
+    @Value("${spring.kafka.consumer.group-id}")
+    private String consumerGroupId;
 
     @Bean
     public Map<String, Object> consumerProperties() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(BOOTSTRAP_SERVERS_CONFIG, host);
-        properties.put(GROUP_ID_CONFIG, group);
+        properties.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        properties.put(GROUP_ID_CONFIG, consumerGroupId);
 
         return properties;
     }

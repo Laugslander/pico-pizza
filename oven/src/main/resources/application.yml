@@ -1,7 +1,8 @@
 server:
   port: 8082
 
-kafka:
-  host: localhost:9092
-  group: oven
-  routing-topic: routing-topic
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: oven

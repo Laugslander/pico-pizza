@@ -10,7 +10,7 @@ import java.io.Serializable;
 /**
  * @author Robin Laugs
  */
-@RedisHash
+@RedisHash(value = "order")
 @Data
 @AllArgsConstructor
 public class Order implements Serializable {

@@ -3,7 +3,6 @@ package nl.robinlaugs.picopizza.oven.service;
 import lombok.extern.java.Log;
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -12,6 +11,7 @@ import static java.lang.String.format;
 import static java.lang.Thread.sleep;
 import static java.util.logging.Level.INFO;
 import static java.util.logging.Level.SEVERE;
+import static nl.robinlaugs.picopizza.oven.messaging.MessagingConstants.ROUTING_TOPIC;
 import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
 
 /**
@@ -23,9 +23,6 @@ public class OvenService {
 
     private static final int BAKING_TIME_SECONDS = 5;
 
-    @Value("${kafka.routing-topic}")
-    private String routingTopic;
-
     private final KafkaTemplate<String, RoutingSlip> kafka;
 
     @Autowired
@@ -33,13 +30,13 @@ public class OvenService {
         this.kafka = kafka;
     }
 
-    @KafkaListener(topics = "${kafka.routing-topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = ROUTING_TOPIC, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
         bake(slip);
 
-        kafka.send(routingTopic, slip);
+        kafka.send(ROUTING_TOPIC, slip);
     }
 
     private void bake(RoutingSlip slip) {

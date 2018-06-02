@@ -5,7 +5,6 @@ import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import nl.robinlaugs.picopizza.stock.data.IngredientRepository;
 import nl.robinlaugs.picopizza.stock.domain.Ingredient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -17,6 +16,7 @@ import static java.util.Objects.isNull;
 import static java.util.logging.Level.INFO;
 import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
 import static nl.robinlaugs.picopizza.routing.Action.STOP;
+import static nl.robinlaugs.picopizza.stock.messaging.MessagingConstants.ROUTING_TOPIC;
 
 /**
  * @author Robin Laugs
@@ -24,9 +24,6 @@ import static nl.robinlaugs.picopizza.routing.Action.STOP;
 @Service
 @Log
 public class IngredientService {
-
-    @Value("${kafka.routing-topic}")
-    private String routingTopic;
 
     private final IngredientRepository ingredientRepository;
 
@@ -38,7 +35,7 @@ public class IngredientService {
         this.kafka = kafka;
     }
 
-    @KafkaListener(topics = "${kafka.routing-topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = ROUTING_TOPIC, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
@@ -54,7 +51,7 @@ public class IngredientService {
         }
 
 
-        kafka.send(routingTopic, slip);
+        kafka.send(ROUTING_TOPIC, slip);
     }
 
     private boolean checkStock(Collection<String> ingredients) {

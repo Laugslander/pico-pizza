@@ -1,7 +1,8 @@
 server:
   port: 8080
 
-kafka:
-  host: localhost:9092
-  group: shop
-  routing-topic: routing-topic
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: shop

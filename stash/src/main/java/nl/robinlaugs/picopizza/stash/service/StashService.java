@@ -6,7 +6,6 @@ import nl.robinlaugs.picopizza.stash.data.redis.OrderRepository;
 import nl.robinlaugs.picopizza.stash.domain.Order;
 import nl.robinlaugs.picopizza.stash.exception.PayloadNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 import static java.lang.String.format;
 import static java.util.logging.Level.INFO;
 import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
+import static nl.robinlaugs.picopizza.stash.messaging.MessagingConstants.ROUTING_TOPIC;
 
 /**
  * @author Robin Laugs
@@ -21,9 +21,6 @@ import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
 @Service
 @Log
 public class StashService {
-
-    @Value("${kafka.routing-topic}")
-    private String routingTopic;
 
     private final KafkaTemplate<String, RoutingSlip> kafka;
 
@@ -35,7 +32,7 @@ public class StashService {
         this.orderRepository = orderRepository;
     }
 
-    @KafkaListener(topics = "${kafka.routing-topic}", groupId = "${kafka.group}", containerFactory = "kafkaListenerContainerFactory")
+    @KafkaListener(topics = ROUTING_TOPIC, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
         log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
 
@@ -46,7 +43,7 @@ public class StashService {
 
         orderRepository.save(order);
 
-        kafka.send(routingTopic, slip);
+        kafka.send(ROUTING_TOPIC, slip);
     }
 
     public Order get(String id) {
@@ -56,4 +53,5 @@ public class StashService {
 
         return order;
     }
+
 }

@@ -21,13 +21,13 @@ import static org.apache.kafka.clients.producer.ProducerConfig.*;
 @Configuration
 public class ProducerConfiguration {
 
-    @Value("${kafka.host}")
-    private String host;
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServers;
 
     @Bean
     public Map<String, Object> producerProperties() {
         Map<String, Object> properties = new HashMap<>();
-        properties.put(BOOTSTRAP_SERVERS_CONFIG, host);
+        properties.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         properties.put(KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
