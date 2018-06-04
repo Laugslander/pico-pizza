@@ -44,6 +44,8 @@ public class StashService {
         orderRepository.save(order);
 
         kafka.send(ROUTING_TOPIC, slip);
+
+        log.log(INFO, format("Sent routing slip for order %s to topic", id));
     }
 
     public boolean get(String id) {

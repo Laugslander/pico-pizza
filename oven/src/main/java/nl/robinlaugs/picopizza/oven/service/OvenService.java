@@ -21,7 +21,7 @@ import static nl.robinlaugs.picopizza.routing.Action.CONTINUE;
 @Log
 public class OvenService {
 
-    private static final int BAKING_TIME_SECONDS = 5;
+    private static final int BAKING_TIME_SECONDS = 10;
 
     private final KafkaTemplate<String, RoutingSlip> kafka;
 
@@ -32,11 +32,15 @@ public class OvenService {
 
     @KafkaListener(topics = ROUTING_TOPIC, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "kafkaListenerContainerFactory")
     private void listen(RoutingSlip slip) {
-        log.log(INFO, format("Received routing slip for order %d", slip.getPayload().getId()));
+        long id = slip.getPayload().getId();
+
+        log.log(INFO, format("Received routing slip for order %d", id));
 
         bake(slip);
 
         kafka.send(ROUTING_TOPIC, slip);
+
+        log.log(INFO, format("Sent routing slip for order %d to topic", id));
     }
 
     private void bake(RoutingSlip slip) {

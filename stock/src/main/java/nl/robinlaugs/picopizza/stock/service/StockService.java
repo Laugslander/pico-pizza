@@ -1,6 +1,7 @@
 package nl.robinlaugs.picopizza.stock.service;
 
 import lombok.extern.java.Log;
+import nl.robinlaugs.picopizza.routing.Payload;
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import nl.robinlaugs.picopizza.stock.data.IngredientRepository;
 import nl.robinlaugs.picopizza.stock.domain.Ingredient;
@@ -50,9 +51,13 @@ public class StockService {
             slip.setStockActionStatus(STOP);
         }
 
-        log.log(INFO, format("Ingredients %s are %s stock", ingredients, slip.getPayload().isInStock() ? "in" : "out of"));
+        Payload payload = slip.getPayload();
+
+        log.log(INFO, format("Ingredients %s are %s stock", ingredients, payload.isInStock() ? "in" : "out of"));
 
         kafka.send(ROUTING_TOPIC, slip);
+
+        log.log(INFO, format("Sent routing slip for order %d to topic", payload.getId()));
     }
 
     private boolean checkStock(Collection<String> ingredients) {

@@ -5,7 +5,6 @@ import nl.robinlaugs.picopizza.routing.Payload;
 import nl.robinlaugs.picopizza.routing.RoutingSlip;
 import nl.robinlaugs.picopizza.shop.data.OrderRepository;
 import nl.robinlaugs.picopizza.shop.domain.Order;
-import nl.robinlaugs.picopizza.shop.domain.OrderStatus;
 import nl.robinlaugs.picopizza.shop.exception.OrderNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -59,7 +58,7 @@ public class ShopService {
 
         long id = order.getId();
 
-        log.log(INFO, "Created order with id %d", id);
+        log.log(INFO, format("Created order with id %d", id));
 
         Payload payload = new Payload(id, order.getPizza().getIngredients());
         RoutingSlip slip = new RoutingSlip(payload);
@@ -73,23 +72,18 @@ public class ShopService {
 
     public Order get(long id) throws OrderNotFoundException {
         Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
-        OrderStatus status = order.getStatus();
 
-        if (status.equals(BEING_PREPARED) || status.equals(OUT_OF_STOCK) || status.equals(SERVED)) {
-            log.log(INFO, format("User requested order with id %d, status is %s", id, status));
+        if (order.getStatus().equals(PREPARED)) {
+            boolean stashed = rest.getForObject(format("%s%d", STASH_SERVICE_API, id), Boolean.class);
 
-            return order;
+            if (stashed) {
+                order.setStatus(SERVED);
+
+                orderRepository.save(order);
+            }
         }
 
-        boolean inStash = rest.getForObject(format("%s%d", STASH_SERVICE_API, order.getId()), Boolean.class);
-
-        if (inStash) {
-            order.setStatus(SERVED);
-
-            orderRepository.save(order);
-        }
-
-        log.log(INFO, format("User requested order with id %d, status is %s", id, status));
+        log.log(INFO, format("User requested order with id %d, status is %s", id, order.getStatus()));
 
         return order;
     }
